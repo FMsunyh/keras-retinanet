@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
+import keras_retinanet.utils.label
 from ..preprocessing.generator import Generator
 from ..utils.image import read_image_bgr
 
@@ -27,29 +27,30 @@ try:
 except ImportError:
     import xml.etree.ElementTree as ET
 
-voc_classes = {
-    'aeroplane'   : 0,
-    'bicycle'     : 1,
-    'bird'        : 2,
-    'boat'        : 3,
-    'bottle'      : 4,
-    'bus'         : 5,
-    'car'         : 6,
-    'cat'         : 7,
-    'chair'       : 8,
-    'cow'         : 9,
-    'diningtable' : 10,
-    'dog'         : 11,
-    'horse'       : 12,
-    'motorbike'   : 13,
-    'person'      : 14,
-    'pottedplant' : 15,
-    'sheep'       : 16,
-    'sofa'        : 17,
-    'train'       : 18,
-    'tvmonitor'   : 19
-}
+# voc_classes = {
+#     'aeroplane'   : 0,
+#     'bicycle'     : 1,
+#     'bird'        : 2,
+#     'boat'        : 3,
+#     'bottle'      : 4,
+#     'bus'         : 5,
+#     'car'         : 6,
+#     'cat'         : 7,
+#     'chair'       : 8,
+#     'cow'         : 9,
+#     'diningtable' : 10,
+#     'dog'         : 11,
+#     'horse'       : 12,
+#     'motorbike'   : 13,
+#     'person'      : 14,
+#     'pottedplant' : 15,
+#     'sheep'       : 16,
+#     'sofa'        : 17,
+#     'train'       : 18,
+#     'tvmonitor'   : 19
+# }
 
+voc_classes = keras_retinanet.utils.label.names_to_labels()
 
 def _findNode(parent, name, debug_name = None, parse = None):
     if debug_name is None:
@@ -105,7 +106,10 @@ class PascalVocGenerator(Generator):
 
     def image_aspect_ratio(self, image_index):
         path  = os.path.join(self.data_dir, 'JPEGImages', self.image_names[image_index] + self.image_extension)
-        image = Image.open(path)
+        try:
+            image = Image.open(path)
+        except Exception as ex:
+            print(path)
         return float(image.width) / float(image.height)
 
     def load_image(self, image_index):

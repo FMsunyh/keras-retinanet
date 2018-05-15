@@ -26,7 +26,11 @@ from .transform import change_transform_origin, transform_aabb
 
 
 def read_image_bgr(path):
-    image = np.asarray(Image.open(path).convert('RGB'))
+    try:
+        image = np.asarray(Image.open(path).convert('RGB'))
+    except Exception as ex:
+        print(path)
+
     return image[:, :, ::-1].copy()
 
 
