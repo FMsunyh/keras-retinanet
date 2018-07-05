@@ -6,9 +6,7 @@ Copyright 2017-2018 Fizyr (https://fizyr.com)
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
-
     http://www.apache.org/licenses/LICENSE-2.0
-
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,7 +24,7 @@ import tensorflow as tf
 # Allow relative imports when being executed as script.
 if __name__ == "__main__" and __package__ is None:
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
-    import keras_retinanet.bin
+    import keras_retinanet.bin  # noqa: F401
     __package__ = "keras_retinanet.bin"
 
 # Change these to absolute imports if you copy this script outside the keras_retinanet package.
@@ -38,12 +36,16 @@ from ..utils.keras_version import check_keras_version
 
 
 def get_session():
+    """ Construct a modified tf session.
+    """
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
     return tf.Session(config=config)
 
 
 def create_generator(args):
+    """ Create generators for evaluation.
+    """
     if args.dataset_type == 'coco':
         # import here to prevent unnecessary dependency on cocoapi
         from ..preprocessing.coco import CocoGenerator
@@ -75,6 +77,8 @@ def create_generator(args):
 
 
 def parse_args(args):
+    """ Parse the arguments.
+    """
     parser     = argparse.ArgumentParser(description='Evaluation script for a RetinaNet network.')
     subparsers = parser.add_subparsers(help='Arguments for specific dataset types.', dest='dataset_type')
     subparsers.required = True
@@ -96,7 +100,7 @@ def parse_args(args):
     parser.add_argument('--score-threshold', help='Threshold on score to filter detections with (defaults to 0.05).', default=0.05, type=float)
     parser.add_argument('--iou-threshold',   help='IoU Threshold to count for a positive detection (defaults to 0.5).', default=0.5, type=float)
     parser.add_argument('--max-detections',  help='Max Detections per image (defaults to 100).', default=100, type=int)
-    parser.add_argument('--save-path',       help='Path for saving images with detections.')
+    parser.add_argument('--save-path',       help='Path for saving images with detections (doesn\'t work for COCO).')
     parser.add_argument('--image-min-side',  help='Rescale the image so the smallest side is min_side.', type=int, default=800)
     parser.add_argument('--image-max-side',  help='Rescale the image if the largest side is larger than max_side.', type=int, default=1333)
 
@@ -129,22 +133,33 @@ def main(args=None):
     model = models.load_model(args.model, backbone_name=args.backbone, convert=args.convert_model)
 
     # print model summary
-    print(model.summary())
+    # print(model.summary())
 
     # start evaluation
-    average_precisions = evaluate(
-        generator,
-        model,
-        iou_threshold=args.iou_threshold,
-        score_threshold=args.score_threshold,
-        max_detections=args.max_detections,
-        save_path=args.save_path
-    )
+    if args.dataset_type == 'coco':
+        from ..utils.coco_eval import evaluate_coco
+        evaluate_coco(generator, model, args.score_threshold)
+    else:
+        average_precisions = evaluate(
+            generator,
+            model,
+            iou_threshold=args.iou_threshold,
+            score_threshold=args.score_threshold,
+            max_detections=args.max_detections,
+            save_path=args.save_path
+        )
 
-    # print evaluation
-    for label, average_precision in average_precisions.items():
-        print(generator.label_to_name(label), '{:.4f}'.format(average_precision))
-    print('mAP: {:.4f}'.format(sum(average_precisions.values()) / len(average_precisions)))
+        # print evaluation
+        present_classes = 0
+        precision = 0
+        for label, (average_precision, num_annotations) in average_precisions.items():
+            print('{:.0f} instances of class'.format(num_annotations),
+                  generator.label_to_name(label), 'with average precision: {:.4f}'.format(average_precision))
+            if num_annotations > 0:
+                present_classes += 1
+                precision       += average_precision
+        print('mAP: {:.4f}'.format(precision / present_classes))
+
 
 if __name__ == '__main__':
     main()

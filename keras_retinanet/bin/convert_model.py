@@ -23,7 +23,7 @@ import sys
 # Allow relative imports when being executed as script.
 if __name__ == "__main__" and __package__ is None:
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
-    import keras_retinanet.bin
+    import keras_retinanet.bin  # noqa: F401
     __package__ = "keras_retinanet.bin"
 
 # Change these to absolute imports if you copy this script outside the keras_retinanet package.
@@ -37,6 +37,7 @@ def parse_args(args):
     parser.add_argument('model_out', help='Path to save the converted model to.')
     parser.add_argument('--backbone', help='The backbone of the model to convert.', default='resnet50')
     parser.add_argument('--no-nms', help='Disables non maximum suppression.', dest='nms', action='store_false')
+    parser.add_argument('--no-class-specific-filter', help='Disables class specific filtering.', dest='class_specific_filter', action='store_false')
 
     return parser.parse_args(args)
 

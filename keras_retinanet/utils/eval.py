@@ -23,7 +23,6 @@ import numpy as np
 import os
 
 import cv2
-import pickle
 
 
 def _compute_ap(recall, precision):
@@ -78,7 +77,7 @@ def _get_detections(generator, model, score_threshold=0.05, max_detections=100, 
         image, scale = generator.resize_image(image)
 
         # run network
-        boxes, scores, labels = model.predict_on_batch(np.expand_dims(image, axis=0))
+        boxes, scores, labels = model.predict_on_batch(np.expand_dims(image, axis=0))[:3]
 
         # correct boxes for image scale
         boxes /= scale
@@ -108,7 +107,7 @@ def _get_detections(generator, model, score_threshold=0.05, max_detections=100, 
         for label in range(generator.num_classes()):
             all_detections[i][label] = image_detections[image_detections[:, -1] == label, :-1]
 
-        print('{}/{}'.format(i, generator.size()), end='\r')
+        print('{}/{}'.format(i + 1, generator.size()), end='\r')
 
     return all_detections
 
@@ -134,7 +133,7 @@ def _get_annotations(generator):
         for label in range(generator.num_classes()):
             all_annotations[i][label] = annotations[annotations[:, 4] == label, :4].copy()
 
-        print('{}/{}'.format(i, generator.size()), end='\r')
+        print('{}/{}'.format(i + 1, generator.size()), end='\r')
 
     return all_annotations
 
@@ -204,7 +203,7 @@ def evaluate(
 
         # no annotations -> AP for this class is 0 (is this correct?)
         if num_annotations == 0:
-            average_precisions[label] = 0
+            average_precisions[label] = 0, 0
             continue
 
         # sort by score
@@ -222,6 +221,6 @@ def evaluate(
 
         # compute average precision
         average_precision  = _compute_ap(recall, precision)
-        average_precisions[label] = average_precision
+        average_precisions[label] = average_precision, num_annotations
 
     return average_precisions
