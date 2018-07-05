@@ -118,8 +118,8 @@ def get_data(data_path):
 
             element_objs = element.findall('object')
             element_filename = element.find('filename').text
-            element_width = int(element.find('size').find('width').text)
-            element_height = int(element.find('size').find('height').text)
+            element_width = int(round(float(element.find('size').find('width').text)))
+            element_height = int(round(float(element.find('size').find('height').text)))
 
             if len(element_objs) > 0:
                 # annotation format 封装后的注释格式
@@ -180,7 +180,7 @@ def get_data(data_path):
                 cv2.waitKey(0)
 
         except Exception as e:
-            print('Exception in pascal_voc_parser: {}'.format(e))
+            print('Exception in pascal_voc_parser: {}\n{}'.format(e,annot))
             continue
     return all_imgs, classes_count, class_mapping
 
@@ -217,8 +217,8 @@ def save_string_list(fileName="", classes_count=[]):
     print("save data  string_list to '%s'" % fileName)
 
 parser = argparse.ArgumentParser(description='Get the data info')
-parser.add_argument('-p', '--parent_data',help='the parent folder of data', default='/home/syh/disk/train/')
-parser.add_argument('-d', '--datadir',help='the folder of data', default='/home/syh/disk/train/all_train_data')
+parser.add_argument('-p', '--parent_data',help='the parent folder of data', default='/home/syh/train_data/data/')
+parser.add_argument('-d', '--datadir',help='the folder of data', default='all_train_data_resize2')
 # parser.add_argument('-p', '--parent_data',help='the parent folder of data', default='/home/syh/RetinaNet/data')
 # parser.add_argument('-d', '--datadir',help='the folder of data', default='train_data-2018-04-12')
 args = parser.parse_args()
@@ -227,7 +227,7 @@ if __name__ == '__main__':
     if args.parent_data and args.datadir:
         data_path = os.path.join(args.parent_data, args.datadir)
         all_imgs, classes_count, class_mapping = get_data(data_path)
-        save_mapping(class_mapping)
+        # save_mapping(class_mapping)
 
         class_mapping_sorted = sorted(class_mapping.items(), key=lambda item:item[1])
         createListCSV2('./data_info/mapping.csv', class_mapping_sorted)
@@ -240,14 +240,13 @@ if __name__ == '__main__':
         pprint.pprint(classes_count)
         createDictCSV('./data_info/classes_count.csv', classes_count)
 
-        # predefined_classes = './data_info/predefined_classes.txt'
-        # save_predefined_classes(predefined_classes, classes_count)
+        predefined_classes = './data_info/predefined_classes.txt'
+        save_predefined_classes(predefined_classes, classes_count)
 
         string_list_classes = './data_info/string_list_classes.txt'
         save_string_list(string_list_classes, classes_count)
 
 '''
 cd /home/syh/RetinaNet/data_processing
-python /home/syh/RetinaNet/data_processing/voc_parser.py -p /home/syh/disk/train/ -d all_train_data
-python /home/syh/RetinaNet/data_processing/voc_parser.py -p /home/syh/ -d all_train_data
+python /home/syh/RetinaNet/data_processing/voc_parser.py -p /home/syh/train_data/data/ -d aug-all_train_data
 '''

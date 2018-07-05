@@ -20,10 +20,10 @@ def run_upload(server_path, local_abs_path):
     print(result[1])
     # sys.exit()
 
-# parser = argparse.ArgumentParser(description='Get the data info')
-# parser.add_argument('-spu', '--remote_path_u', help='path in server', default='/home/ftpuser/ftp/pre_data')
-# parser.add_argument('-lpu', '--local_path_u', help='path in local', default='/home/syh/RetinaNet/data_52/test_zip/zip')
-# args = parser.parse_args()
+parser = argparse.ArgumentParser(description='Get the data info')
+parser.add_argument('-spu', '--remote_path_u', help='path in server', default='/data/test_ftp')
+parser.add_argument('-lpu', '--local_path_u', help='path in local', default='/home/syh/train_data/test.zip')
+args = parser.parse_args()
 
 def main():
     if args.remote_path_u and args.local_path_u:
@@ -35,5 +35,5 @@ if __name__  == '__main__':
 """
 cd /home/syh/RetinaNet/data_processing
 python ftp_upload.py -spu /home/ftpuser/ftp/predict_data/test_zip -lpu /home/syh/RetinaNet/data_52/test_zip/zip
-python ftp_upload.py -spu /home/ftpuser/ftp/predict_data/2018-04-26 -lpu /home/syh/RetinaNet/data_63/2018-04-26/zip
+python ftp_upload.py -spu /data/test_ftp/ -lpu /home/syh/train_data/test.zip
 """

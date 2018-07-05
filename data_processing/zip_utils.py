@@ -33,6 +33,7 @@ def un_zip_all(file_name, output):
     #     remove_all(output)
 
     try:
+        print("start: {} extract to {}".format(file_name, output) )
         zip_file = zipfile.ZipFile(file_name)
         zip_file.extractall(output)
         zip_file.close()
@@ -47,7 +48,7 @@ def zip_list(file_list=[], save_path='', mode='w', note=''):
     zfile = zipfile.ZipFile(save_path, mode)
     for tar in file_list:
         tars = tar.split(os.sep)
-        arcname = os.path.join(tars[-2], tars[-1])
+        arcname = os.path.join(tars[-3], tars[-2], tars[-1])
         zfile.write(tar,arcname)# tar -->file， arcname->file name in zip
 
     zfile.close()

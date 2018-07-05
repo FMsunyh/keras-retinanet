@@ -5,6 +5,7 @@
 # @File : create_Main.py 
 # @Software: ZJ_AI
 # =========================================================
+import argparse
 import random
 import os
 from data_processing.io_utils import mkdir
@@ -28,8 +29,14 @@ def _create_Main(path):
     imgs = os.listdir(image_dir)
     random.shuffle(imgs)
 
+    trainval_test_images = []
     trainval_images = []
     test_images = []
+
+    for i in range(len(imgs)):
+        s = imgs[i]
+        trainval_test_images.append(s.split('.')[0] + '\n')
+
     for i in range(len(imgs)//scale, len(imgs)):
         s = imgs[i]
         trainval_images.append(s.split('.')[0] + '\n')
@@ -38,12 +45,19 @@ def _create_Main(path):
         s = imgs[i]
         test_images.append(s.split('.')[0] + '\n')
 
+    with open(main_dir+'/trainval_test.txt','w+') as f:
+        f.writelines(trainval_test_images)
+        print("{}, numbers:{}".format(main_dir + '/trainval_test.txt', len(trainval_test_images)))
+
     with open(main_dir+'/trainval.txt','w+') as f:
         f.writelines(trainval_images)
         print("{}, numbers:{}".format(main_dir + '/trainval.txt', len(trainval_images)))
     with open(main_dir+'/test.txt','w+') as f:
         f.writelines(test_images)
         print("{}, numbers:{}".format(main_dir + '/test.txt', len(test_images)))
+
+    print('total: {}'.format(len(imgs)))
+    print('step: {}'.format(len(trainval_images)//2+1))
 
 def create_sub_Main(dirs):
     data_paths = [os.path.join(ROOT_HOME, s) for s in dirs]
@@ -68,9 +82,20 @@ def create_txts(data_dirs):
 #     data_paths = [os.path.join(ROOT_HOME, s) for s in dirs]
 #     create_subs_Main(data_paths)
 
+parser = argparse.ArgumentParser(description='Get the data info')
+# parser.add_argument('-d', '--datadir', help='path in server', default='/home/syh/train_data/data/all_train_data')
+# parser.add_argument('-d', '--datadir', help='path in server', default='/home/syh/train_data/test')
+parser.add_argument('-d', '--datadir', help='path in server', default='/home/syh/train_data/data/all_train_data_resize')
+args = parser.parse_args()
+
 if __name__ == "__main__":
     # data_dir = '/home/syh/disk/train/all_train_data'
 
-    # data_dir = '/home/syh/train_data/data02-04'
-    data_dir = '/home/syh/all_train_data'
+    data_dir = args.datadir
+    # data_dir = '/home/syh/all_train_data'
     create_txt(data_dir)
+
+"""
+cd ~/RetinaNet/data_processing
+python create_Main.py -d /home/syh/train_data/data/sub_train_data/train_data-2018-05-11
+"""

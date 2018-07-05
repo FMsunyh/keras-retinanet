@@ -41,6 +41,7 @@ def parse_args(args):
     return parser.parse_args(args)
 
 
+
 def main(args=None):
     # parse arguments
     if args is None:
@@ -56,3 +57,7 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
+    # import datetime
+    # cur_date = datetime.datetime.now()
+    # str_date = '{year:02d}{month:02d}{day:02d}'.format(year=cur_date.year, month=cur_date.month, day=cur_date.day)
+    # print(str_date)

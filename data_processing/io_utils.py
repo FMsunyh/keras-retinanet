@@ -34,7 +34,7 @@ def mkdir(dest_dir):
         return True
     else:
         # 如果目录存在则不创建，并提示目录已存在
-        print(dest_dir + ' Dir is existed ')
+        # print(dest_dir + ' Dir is existed ')
         return False
 
 def move(src_file, dest_dir):

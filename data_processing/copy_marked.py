@@ -8,11 +8,8 @@
 import argparse
 import os
 import xml.etree.ElementTree as ET
-import numpy as np
-import cv2
 
 import io_utils
-from config import ROOT_HOME
 from xml_utils import write_xml
 
 
@@ -81,7 +78,8 @@ args = parser.parse_args()
 if __name__ == '__main__':
     if args.datadir:
     # input_path = '../data/train_data-2018-04-11'
-        train_data_dir = os.path.join(ROOT_HOME, 'data', args.datadir)
+    #     train_data_dir = os.path.join(ROOT_HOME, 'data', args.datadir)
+        train_data_dir = args.datadir
         copy_marked(train_data_dir)
 
 """

@@ -78,4 +78,5 @@ def load_model(filepath, backbone_name='resnet50', convert=False, nms=True):
         from .retinanet import retinanet_bbox
         model = retinanet_bbox(model=model, nms=nms)
 
+
     return model

@@ -19,7 +19,8 @@ import random
 import threading
 import time
 import warnings
-
+import threading
+import queue
 import keras
 
 from ..utils.anchors import anchor_targets_bbox, bbox_transform
@@ -38,7 +39,7 @@ class Generator(object):
         self,
         transform_generator = None,
         batch_size=1,
-        group_method='ratio',  # one of 'none', 'random', 'ratio'
+        group_method='random',  # one of 'none', 'random', 'ratio'
         shuffle_groups=True,
         image_min_side=800,
         image_max_side=1333,
@@ -58,6 +59,10 @@ class Generator(object):
         self.lock        = threading.Lock()
 
         self.group_images()
+
+        # self.q = queue.Queue(maxsize=3)
+        # self.p = threading.Thread(target=self.producer, args=())
+        # self.p.start()
 
     def size(self):
         raise NotImplementedError('size method not implemented')
@@ -244,3 +249,34 @@ class Generator(object):
             self.group_index = (self.group_index + 1) % len(self.groups)
 
         return self.compute_input_output(group)
+
+    # def producer(self):
+    #     while True:
+    #         try:
+    #             # advance the group index
+    #             if self.q.qsize() < 3:
+    #                 with self.lock:
+    #                     if self.group_index == 0 and self.shuffle_groups:
+    #                         # shuffle groups at start of epoch
+    #                         random.shuffle(self.groups)
+    #                     group = self.groups[self.group_index]
+    #                     self.group_index = (self.group_index + 1) % len(self.groups)
+    #
+    #                 inputs, targets = self.compute_input_output(group)
+    #                 self.q.put((inputs, targets))
+    #             # print(self.q.qsize())
+    #         except Exception as ex:
+    #             print(ex)
+    #
+    # def consumer(self):
+    #     try:
+    #         value = self.q.get(True)
+    #         return value
+    #     except Exception as ex:
+    #         print(ex)
+    #
+    # def next(self):
+    #     return self.consumer()
+    #
+    # def __del__(self):
+    #     self.p.join()

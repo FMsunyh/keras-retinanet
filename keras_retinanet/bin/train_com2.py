@@ -22,6 +22,7 @@ import os
 import sys
 import warnings
 
+import datetime
 import keras
 import keras.preprocessing.image
 from keras.utils import multi_gpu_model
@@ -108,10 +109,12 @@ def create_callbacks(model, training_model, prediction_model, validation_generat
     if args.snapshots:
         # ensure directory created first; otherwise h5py will error after epoch.
         makedirs(args.snapshot_path)
+        cur_date = datetime.datetime.now()
+        str_date = '{year:02d}{month:02d}{day:02d}'.format(year=cur_date.year, month=cur_date.month, day=cur_date.day)
         checkpoint = keras.callbacks.ModelCheckpoint(
             os.path.join(
                 args.snapshot_path,
-                '{backbone}_{dataset_type}_{{epoch:02d}}.h5'.format(backbone=args.backbone, dataset_type=args.dataset_type)
+                '{date}_{backbone}_{datasets}_GPUs{GPU}_{{epoch:02d}}.h5'.format(date=str_date,backbone=args.backbone, datasets=args.datasets, GPU=args.multi_gpu)
             ),
             verbose=1
         )
@@ -359,18 +362,19 @@ def parse_args(args):
     parser.add_argument('--backbone',        help='Backbone model used by retinanet.', default='resnet50', type=str)
     parser.add_argument('--batch-size',      help='Size of the batches.', default=2, type=int)
     parser.add_argument('--gpu',             help='Id of the GPU to use (as reported by nvidia-smi).')
-    parser.add_argument('--multi-gpu',       help='Number of GPUs to use for parallel processing.', type=int, default=0)
+    parser.add_argument('--multi-gpu',       help='Number of GPUs to use for parallel processing.', type=int, default=1)
     parser.add_argument('--multi-gpu-force', help='Extra flag needed to enable (experimental) multi-gpu support.', action='store_true')
     parser.add_argument('--epochs',          help='Number of epochs to train.', type=int, default=100)
-    parser.add_argument('--steps',           help='Number of steps per epoch.', type=int, default=2000)
+    parser.add_argument('--steps',           help='Number of steps per epoch.', type=int, default=30000)
     parser.add_argument('--snapshot-path',   help='Path to store snapshots of models during training (defaults to \'./snapshots\')', default='./snapshots')
     parser.add_argument('--tensorboard-dir', help='Log directory for Tensorboard output', default='./logs')
     parser.add_argument('--no-snapshots',    help='Disable saving snapshots.', dest='snapshots', action='store_false')
     parser.add_argument('--no-evaluation',   help='Disable per epoch evaluation.', dest='evaluation', action='store_false')
     parser.add_argument('--freeze-backbone', help='Freeze training of backbone layers.', action='store_true')
-    parser.add_argument('--random-transform', help='Randomly transform image and annotations.', action='store_true')
+    parser.add_argument('--random-transform', help='Randomly transform image and annotations.', action='store_true', default=True)
     parser.add_argument('--image-min-side', help='Rescale the image so the smallest side is min_side.', type=int, default=800)
     parser.add_argument('--image-max-side', help='Rescale the image if the largest side is larger than max_side.', type=int, default=1333)
+    parser.add_argument('--datasets', help='datasdets.', type=str, default='train_data')
 
     return check_args(parser.parse_args(args))
 
@@ -468,7 +472,7 @@ def main(args=None):
         )
 
     # print model summary
-    print(model.summary())
+    # print(model.summary())
 
     # this lets the generator compute backbone layer shapes using the actual backbone model
     if 'vgg' in args.backbone or 'densenet' in args.backbone:

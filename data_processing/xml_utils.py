@@ -157,7 +157,8 @@ def del_node_by_tagkeyvalue(nodelist, tag, kv_map):
 
 def modify_label_name(input_path):
     # train VOC2012
-    data_paths = [os.path.join(input_path,s) for s in ['train_data']]
+    folders = os.listdir(input_path)
+    data_paths = [os.path.join(input_path,s) for s in folders]
     print('Parsing annotation files')
 
     for data_path in data_paths:
@@ -172,11 +173,20 @@ def modify_label_name(input_path):
 
                 for element_obj in element_objs:
                     node = element_obj.find('name')
-                    print(node.text)
+                    # print(node.text)
                     class_name = element_obj.find('name').text
-                    if class_name == 'mn-zgl-pz-cmw-250ml':     # 1
-                        node.text = 'mn-zgl-hz-cmw-250ml'
-
+                    if class_name == 'ly-hlydhp-hz-yw-138g':     # 1
+                        node.text = 'hly-hlydhp-hz-yw-138g'
+                        print(annot)
+                    # elif class_name == 'yd-ydmtcqxlm-pz-qxlmw-56g':     # 1
+                    #     node.text = 'yd-ydwtkxt-pz-qxlmw-56g'
+                    #     print(annot)
+                    # elif class_name == 'df-dfqkl-dz-zrqkl--43g':     # 1
+                    #     node.text = 'df-dfqkl-dz-zrqkl-43g'
+                    #     print(annot)
+                    # elif    class_name =='hwd-hwdfbm-tz-hxw-75g':
+                    #     node.text = 'hwd-hwdfbm-tz-hxw-84g'
+                    #     print(annot)
                     # if class_name == 'kkklgz330ml':     # 1
                     #     node.text = 'kkkl-kkkl-gz-yw-330ml'
                     # elif class_name == 'nfsq550ml':     #2
@@ -217,7 +227,7 @@ def modify_label_name(input_path):
                     #     node.text = 'blcy-blcy-pz-yw-550ml'
                     # else:
                     #     node.text = 'other'             #20
-                    print(node.text)
+                    # print(node.text)
                 write_xml(et, annot)
             except Exception as e:
                 print('Exception in pascal_voc_parser: {}'.format(e))
@@ -378,9 +388,10 @@ def get_imagenamge_by_label(input_path):
 
 
 
-# if __name__ == "__main__":
-#     input_path = 'data/'
-#     modify_label_name(input_path)
+if __name__ == "__main__":
+    # input_path = '/home/syh/train_data/data'
+    input_path = '/home/syh/train_data/data/aug-all_train_data'
+    modify_label_name(input_path)
 
 # if __name__ == "__main__":
 #     input_path = 'data/train_data-2018-3-7/'
@@ -393,9 +404,9 @@ def get_imagenamge_by_label(input_path):
 #     input_path = 'data/all_data/'
 #     create_Main(input_path)
 
-if __name__ == "__main__":
-    input_path = '../'
-    modify2_label_name(input_path)
+# if __name__ == "__main__":
+#     input_path = '../'
+#     modify2_label_name(input_path)
 
 # if __name__ == "__main__":
 #     input_path = '../data/'

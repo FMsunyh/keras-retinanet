@@ -10,10 +10,10 @@ import os
 import io_utils
 from zip_utils import zip_list
 
-# parser = argparse.ArgumentParser(description='Get the data info')
-# parser.add_argument('-i', '--dir',help='directory to zip', default='/home/syh/RetinaNet/data_52/test')
-# parser.add_argument('-o', '--output',help='output diretory', default='/home/syh/RetinaNet/data_52/test')
-# args = parser.parse_args()
+parser = argparse.ArgumentParser(description='Get the data info')
+parser.add_argument('-i', '--dir',help='directory to zip', default='/home/syh/RetinaNet/data_52/test')
+parser.add_argument('-o', '--output',help='output diretory', default='/home/syh/RetinaNet/data_52/test')
+args = parser.parse_args()
 
 
 def _compression_without_anno(dir, output):

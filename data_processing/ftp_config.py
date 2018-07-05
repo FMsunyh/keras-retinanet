@@ -6,11 +6,11 @@
 # @Software: ZJ_AI
 # =========================================================
 # FTP服务器的IP、端口、账户、密码
-host = "192.168.1.196"
+host = "192.168.1.210"
 port = 21  # not str
 username = "syh"
 password = "zjai0301"
 
 # remote和local是相对客户端的
-ftp_home = "/disk2/data/"
+ftp_home = "/data"
 localDir = "/"

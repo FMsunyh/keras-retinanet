@@ -3,6 +3,8 @@
 # @Author  : sunyonghai
 # @File    : open_image.py
 # @Software: ZJ_AI
+import argparse
+import multiprocessing.pool
 
 import numpy as np
 import time
@@ -19,32 +21,58 @@ def read_image_bgr(path):
         print(ex)
     return image[:, :, ::-1].copy()
 
+def get_data(data_path):
+    for files in os.listdir(data_path):
+        path = os.path.join(data_path,files)
+        yield path
+
+def process(path):
+    st = time.time()
+    read_image_bgr(path)
+    end = time.time()
+
+    str_info = "Image ID:{} --- read time:{} ms".format(os.path.basename(path), str(1000 * (end - st)))
+    print(str_info)
+
+def main(data_path):
+    generator = get_data(data_path)
+    # cpus = os.cpu_count()
+    cpus = 2
+    p = multiprocessing.pool.Pool(cpus)
+    p.map_async(process, generator)
+
+    p.close()
+    p.join()
+
+parser = argparse.ArgumentParser(description='Get the data info')
+parser.add_argument('-i', '--input',help='path of data', default='/home/syh/train_data/test')
+args = parser.parse_args()
 
 if __name__ == '__main__':
     # data_path = '/home/syh/all_train_data/JPEGImages'
-    data_path = '/home/syh/train_data/data02-04/JPEGImages'
+    data_path =  os.path.join( args.input, 'JPEGImages' )
+    # data_path =  '/home/syh/train_data/fusion/background_1333-800'
+    st = time.time()
+    main(data_path)
+    end = time.time()
+    str_info = "read time:{} minutes".format(str((end - st) / 60))
+    print(str_info)
 
-    for files in os.listdir(data_path):
-        path = os.path.join(data_path,files)
-        st = time.time()
-        read_image_bgr(path)
-        end = time.time()
 
-        str_info = "{}: read time:{} ms".format(files, str(1000 * (end - st)))
-        print(str_info)
-#
 # if __name__ == '__main__':
-#     data_path = '/home/syh/all_train_data/JPEGImages'
+#     # data_path = '/home/syh/all_train_data/JPEGImages'
+#     data_path =  os.path.join( args.input, 'JPEGImages' )
+#     st = time.time()
+#     for files in os.listdir(data_path):
+#         path = os.path.join(data_path,files)
 #
-#     count = 0
-#     for _ in range(0, 100):
-#         path = '/home/syh/all_train_data/JPEGImages/train_20180409_1654.jpg'
-#         st = time.time()
 #         read_image_bgr(path)
-#         end = time.time()
-#         str_info = "read time:{} ms".format(str(1000 * (end - st)))
-#         print(str_info)
 #
-#         count += 1000 * (end - st)
-#
-#     print("total:{}".format(count // 100))
+#     end = time.time()
+#     str_info = "{}: read time:{} minutes".format(files, str((end - st) / 60))
+#     print(str_info)
+
+"""
+cd /home/syh/RetinaNet/data_processing
+python open_image.py -i /home/syh/train_data/data/sub_train_data/train_data-2018-05-10
+"""

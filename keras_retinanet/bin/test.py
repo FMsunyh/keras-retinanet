@@ -49,13 +49,17 @@ TEST_DATA_DIR = os.path.join( DATA_DIR, 'JPEGImages/')
 TEST_RESULT_DIR = os.path.join(DATA_DIR, 'JPEGImages_bbox/')
 TEST_ANNOTATION_DIR = os.path.join(DATA_DIR, 'Annotations/')
 
-threshold = 0.7
+threshold = 0.6
 
 Debug = True
 def get_session():
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
     return tf.Session(config=config)
+
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 keras.backend.tensorflow_backend.set_session(get_session())
 
@@ -64,6 +68,8 @@ model = keras_retinanet.models.load_model(MODEL_PATH, backbone_name='resnet50', 
 print(model.summary())
 # load label to names mapping for visualization purposes
 labels_to_names = labels_to_names()
+
+count = 0
 
 class ImageInfo(object):
     def __init__(self, name='', path='', image_extension='.jpg', image_bgr=None):
@@ -127,15 +133,16 @@ def predict_imageinfo(imageinfos):
         item.height = image.shape[0]
         item.channel = image.shape[2]
         boxes, scores, labels = predict(image)
-        # draw = image.copy()
-        # draw = cv2.cvtColor(draw, cv2.COLOR_BGR2RGB)
-        # image_draw = visualize(draw, boxes, scores, labels)
-        #
-        # save_path = os.path.join(TEST_RESULT_DIR, item.name + '.' + item.image_extension)
-        # save_image(image_draw, save_path)
+        draw = image.copy()
+        draw = cv2.cvtColor(draw, cv2.COLOR_BGR2RGB)
+        image_draw = visualize(draw, boxes, scores, labels)
+
+        save_path = os.path.join(TEST_RESULT_DIR, item.name + '.' + item.image_extension)
+        save_image(image_draw, save_path)
         save_annotations(TEST_ANNOTATION_DIR, item, boxes, scores, labels)
 
 def predict(image):
+    # time.sleep(0.1)
     image = preprocess_image(image)
     image, scale = resize_image(image)
 
@@ -183,6 +190,7 @@ def check_border(bbox, width, height):
         bbox[3] = height - 1
 
 def make_xml(im_info, boxes, scores, labels):
+    global count
     node_root = Element('annotation')
     node_folder = SubElement(node_root, 'folder')
     node_folder.text = 'JPEGImages'
@@ -206,8 +214,10 @@ def make_xml(im_info, boxes, scores, labels):
     node_segmented.text = '0'
 
     for b, score, label in zip(boxes[0], scores[0], labels[0]):
-        if score < 0.7:
+        if score < threshold:
             break
+
+        count+=1
 
         node_object = SubElement(node_root, 'object')
         node_name = SubElement(node_object, 'name')
@@ -269,6 +279,7 @@ def save_annotations(save_dir, im_info, boxes, scores, labels):
 
     # return True
 
+
 if __name__ == '__main__':
     imageinfos = get_imageinfos(TEST_DATA_DIR)
 
@@ -280,7 +291,14 @@ if __name__ == '__main__':
 
     predict_imageinfo(imageinfos)
 
+    global count
+    print("total bboxes:{}".format(count))
+
 """
 cd /home/syh/RetinaNet/data_processing
 python /home/syh/RetinaNet/keras_retinanet/bin/test.py -d /home/syh/train_data/2018-05-07 -m /home/syh/train_data/models/resnet50_pascal_57.h5
+python /home/syh/RetinaNet/keras_retinanet/bin/test.py -d /home/syh/train_data/2018-05-11 -m /home/syh/RetinaNet/snapshots/20180613_resnet50_pascal_08.h5
+python /home/syh/RetinaNet/keras_retinanet/bin/test.py -d /home/syh/train_data/predict_data-2018-05-14 -m /home/syh/RetinaNet/snapshots/resnet50_pascal_61.h5
+python /home/syh/RetinaNet/keras_retinanet/bin/test.py -d /home/syh/train_data/predict/test3 -m /home/syh/RetinaNet/snapshots/20180613_resnet50_pascal_08.h5
+python /home/syh/RetinaNet/keras_retinanet/bin/test.py -d /home/syh/train_data/predict/test3 -m /home/syh/RetinaNet/snapshots/20180613_resnet50_pascal_08.h5
 """
