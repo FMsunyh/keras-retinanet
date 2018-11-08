@@ -7,18 +7,19 @@ import keras.preprocessing.image
 from keras_retinanet.models import ResNet50RetinaNet
 from keras_retinanet.preprocessing import PascalVocIterator
 
-# os.environ["CUDA_VISIBLE_DEVICES"] = "1"
-
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"] = '1'
 
 def create_model():
-    image = keras.layers.Input((None, None, 3))
+    image = keras.layers.Input((800, 1200, 3))
     gt_boxes = keras.layers.Input((None, 5))
-    return ResNet50RetinaNet([image, gt_boxes], num_classes=21, weights='snapshots/resnet50_voc_best.h5')
+    return ResNet50RetinaNet([image, gt_boxes], num_classes=21, weights='/home/syh/RetinaNet_Learning/snapshots/resnet50_voc_best.h5')
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Simple training script for Pascal VOC object detection.')
-    parser.add_argument('voc_path', help='Path to Pascal VOC directory (ie. /tmp/VOCdevkit/VOC2007).')
+    parser.add_argument('--voc_path', help='Path to Pascal VOC directory (ie. /tmp/VOCdevkit/VOC2007).',default='/home/syh/train_data/VOCdevkit/VOC2007')
 
     return parser.parse_args()
 
