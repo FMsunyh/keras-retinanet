@@ -6,20 +6,28 @@ import keras.preprocessing.image
 
 from keras_retinanet.models import ResNet50RetinaNet
 from keras_retinanet.preprocessing import PascalVocIterator
+import keras_retinanet
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = '1'
+import tensorflow as tf
+
+
+def get_session():
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    return tf.Session(config=config)
+
+# os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+keras.backend.tensorflow_backend.set_session(get_session())
+
 
 def create_model():
-    image = keras.layers.Input((800, 1200, 3))
-    gt_boxes = keras.layers.Input((None, 5))
-    return ResNet50RetinaNet([image, gt_boxes], num_classes=21, weights='/home/syh/RetinaNet_Learning/snapshots/resnet50_voc_best.h5')
+    image = keras.layers.Input((None, None, 3))
+    return ResNet50RetinaNet(image, num_classes=21, weights='snapshots/resnet50_voc_best.h5')
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Simple training script for Pascal VOC object detection.')
-    parser.add_argument('--voc_path', help='Path to Pascal VOC directory (ie. /tmp/VOCdevkit/VOC2007).',default='/home/syh/train_data/VOCdevkit/VOC2007')
+    parser.add_argument('voc_path', help='Path to Pascal VOC directory (ie. /tmp/VOCdevkit/VOC2007).')
 
     return parser.parse_args()
 
@@ -32,7 +40,7 @@ if __name__ == '__main__':
     model = create_model()
 
     # compile model (note: set loss to None since loss is added inside layer)
-    model.compile(loss=None, optimizer=keras.optimizers.adam(lr=1e-5, clipnorm=0.001))
+    model.compile(loss={'predictions': keras_retinanet.losses.focal_loss()}, optimizer=keras.optimizers.adam(lr=1e-5, clipnorm=0.001))
 
     # print model summary
     print(model.summary())
@@ -69,7 +77,7 @@ if __name__ == '__main__':
     model.fit_generator(
         generator=train_generator,
         steps_per_epoch=len(train_generator.image_names) // batch_size,
-        epochs=100,
+        epochs=50,
         verbose=1,
         validation_data=test_generator,
         validation_steps=500,  # len(test_generator.image_names) // batch_size,
