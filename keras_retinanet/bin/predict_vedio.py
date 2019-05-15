@@ -46,7 +46,7 @@ def get_session():
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 keras.backend.tensorflow_backend.set_session(get_session())
 
@@ -59,7 +59,7 @@ def load_model(load=False):
         try:
             print('loading the model...............')
             model = keras_retinanet.models.load_model(MODEL_PATH, backbone_name='resnet50',convert=True)
-            image_path = '/home/syh/commdity_recognition/development/server/data/download/train_20180307_1725.jpg'
+            image_path = '/home/syh/commdity_recognition/development/server/static/download/train_20180307_1725.jpg'
             image = read_image_bgr(image_path)
             image = preprocess_image(image)
             image, scale = resize_image(image)
@@ -134,7 +134,7 @@ def main():
             # cv2.imshow("BGR", pipeline(img))
 
             imgcopy = img_bbox[:, :, ::-1].copy()
-            cv2.imshow("predict", pipeline(imgcopy))
+            cv2.imshow("predict", imgcopy)
 
         # press keyboard 'q' to exit
         if cv2.waitKey(1) & 0xFF == ord('q'):

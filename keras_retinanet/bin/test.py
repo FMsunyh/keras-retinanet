@@ -247,7 +247,7 @@ def make_xml(im_info, boxes, scores, labels):
 
         node_ymax = SubElement(node_bndbox, 'ymax')
         node_ymax.text = str(int(b[3]))
-
+        print(b)
     xml = tostring(node_root, pretty_print=True)
     dom = parseString(xml)
     # print xml 打印查看结果
@@ -300,5 +300,5 @@ python /home/syh/RetinaNet/keras_retinanet/bin/test.py -d /home/syh/train_data/2
 python /home/syh/RetinaNet/keras_retinanet/bin/test.py -d /home/syh/train_data/2018-05-11 -m /home/syh/RetinaNet/snapshots/20180613_resnet50_pascal_08.h5
 python /home/syh/RetinaNet/keras_retinanet/bin/test.py -d /home/syh/train_data/predict_data-2018-05-14 -m /home/syh/RetinaNet/snapshots/resnet50_pascal_61.h5
 python /home/syh/RetinaNet/keras_retinanet/bin/test.py -d /home/syh/train_data/predict/test3 -m /home/syh/RetinaNet/snapshots/20180613_resnet50_pascal_08.h5
-python /home/syh/RetinaNet/keras_retinanet/bin/test.py -d /home/syh/train_data/predict/test3 -m /home/syh/RetinaNet/snapshots/20180613_resnet50_pascal_08.h5
+python /home/syh/RetinaNet/keras_retinanet/bin/test.py -d /home/syh/train_data/data/fusion_train_data/random_choice_data_3000 -m /home/syh/RetinaNet/snapshots/fusion/20180824_resnet50_fusion_GPUs1_04.h5
 """

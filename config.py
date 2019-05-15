@@ -7,9 +7,12 @@
 # =========================================================
 import os
 
-ROOT_HOME = '/home/syh/RetinaNet/'
+ROOT_HOME =  os.path.expanduser('~/RetinaNet/')
 # LABEL_MAPPING_PATH = os.path.join(ROOT_HOME,'mapping_54.json')
-LABEL_MAPPING_PATH = os.path.join(ROOT_HOME,'mapping_all.json')
+# LABEL_MAPPING_PATH = os.path.join(ROOT_HOME,'mapping_all.json')
+LABEL_MAPPING_PATH = os.path.join(ROOT_HOME,'name_to_label.json')
+# LABEL_MAPPING_PATH = os.path.join(ROOT_HOME,'mapping_300.json')
+# LABEL_MAPPING_PATH = os.path.join(ROOT_HOME,'mapping_11.json')
 MODEL_PATH =os.path.join(ROOT_HOME,'model','resnet101_pascal_01.h5')
 
 TRAIN_DATA = '/disk2/train'
@@ -17,8 +20,6 @@ TRAIN_DATA = '/disk2/train'
 class Phase(object):
     def __init__(self,class_num):
         self.class_num = class_num
-
-PHASE = 0
 
 # TEST_DATA_DIR = os.path.join(ROOT_HOME,'data/test/images/')
 # TEST_RESULT_DIR = os.path.join(ROOT_HOME,'data/test/results/')

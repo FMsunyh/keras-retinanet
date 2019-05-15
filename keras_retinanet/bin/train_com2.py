@@ -108,13 +108,14 @@ def create_callbacks(model, training_model, prediction_model, validation_generat
     # save the model
     if args.snapshots:
         # ensure directory created first; otherwise h5py will error after epoch.
-        makedirs(args.snapshot_path)
+        makedirs(os.path.join(args.snapshot_path, args.tag))
         cur_date = datetime.datetime.now()
         str_date = '{year:02d}{month:02d}{day:02d}'.format(year=cur_date.year, month=cur_date.month, day=cur_date.day)
         checkpoint = keras.callbacks.ModelCheckpoint(
             os.path.join(
                 args.snapshot_path,
-                '{date}_{backbone}_{datasets}_GPUs{GPU}_{{epoch:02d}}.h5'.format(date=str_date,backbone=args.backbone, datasets=args.datasets, GPU=args.multi_gpu)
+                args.tag,
+                '{date}_{backbone}_{datasets}_{{epoch:02d}}.h5'.format(date=str_date,backbone=args.backbone, datasets=args.datasets)
             ),
             verbose=1
         )
@@ -204,6 +205,7 @@ def create_generators(args):
         train_generator = PascalVocGenerator(
             args.pascal_path,
             'trainval',
+            # 'trainval_test',
             transform_generator=transform_generator,
             batch_size=args.batch_size,
             image_min_side=args.image_min_side,
@@ -313,38 +315,6 @@ def check_args(parsed_args):
 
     return parsed_args
 
-# def parse_args(args):
-#     parser     = argparse.ArgumentParser(description='Simple training script for training a RetinaNet network.')
-#     subparsers = parser.add_subparsers(help='Arguments for specific dataset types.', dest='dataset_type')
-#     subparsers.required = True
-#
-#     pascal_parser = subparsers.add_parser('pascal')
-#     # pascal_parser.add_argument('pascal_path', help='Path to dataset directory (ie. /tmp/VOCdevkit).', default='/home/syh/datasets/VOCdevkit/VOC2012' )
-#     pascal_parser.add_argument('pascal_path', help='Path to dataset directory (ie. /tmp/VOCdevkit).', default='/home/syh/RetinaNet/data/train' )
-#     # pascal_parser.add_argument('pascal_path', help='Path to dataset directory (ie. /tmp/VOCdevkit).')
-#
-#     group = parser.add_mutually_exclusive_group()
-#     group.add_argument('--snapshot',          help='Resume training from a snapshot.')
-#     group.add_argument('--imagenet-weights',  help='Initialize the model with pretrained imagenet weights. This is the default behaviour.', action='store_const', const=True, default=True)
-#     group.add_argument('--weights',           help='Initialize the model with weights from a file.')
-#     group.add_argument('--no-weights',        help='Don\'t initialize the model with any weights.', dest='imagenet_weights', action='store_const', const=False)
-#
-#     parser.add_argument('--backbone',        help='Backbone model used by retinanet.', default='resnet101', type=str)
-#     parser.add_argument('--batch-size',      help='Size of the batches.', default=2, type=int)
-#     parser.add_argument('--gpu',             help='Id of the GPU to use (as reported by nvidia-smi).')
-#     parser.add_argument('--multi-gpu',       help='Number of GPUs to use for parallel processing.', type=int, default=0)
-#     parser.add_argument('--multi-gpu-force', help='Extra flag needed to enable (experimental) multi-gpu support.', action='store_true')
-#     parser.add_argument('--epochs',          help='Number of epochs to train.', type=int, default=50)
-#     parser.add_argument('--steps',           help='Number of steps per epoch.', type=int, default=10000)
-#
-#     parser.add_argument('--snapshot-path',   help='Path to store snapshots of models during training (defaults to \'./snapshots\')', default='/disk2/train/snapshots')
-#     parser.add_argument('--tensorboard-dir', help='Log directory for Tensorboard output', default='./logs')
-#     parser.add_argument('--no-snapshots',    help='Disable saving snapshots.', dest='snapshots', action='store_false')
-#     parser.add_argument('--no-evaluation',   help='Disable per epoch evaluation.', dest='evaluation', action='store_false')
-#     parser.add_argument('--freeze-backbone', help='Freeze training of backbone layers.', action='store_true')
-#
-#     return check_args(parser.parse_args(args))
-
 def parse_args(args):
     parser     = argparse.ArgumentParser(description='Simple training script for training a RetinaNet network.')
     subparsers = parser.add_subparsers(help='Arguments for specific dataset types.', dest='dataset_type')
@@ -359,13 +329,15 @@ def parse_args(args):
     group.add_argument('--weights',           help='Initialize the model with weights from a file.')
     group.add_argument('--no-weights',        help='Don\'t initialize the model with any weights.', dest='imagenet_weights', action='store_const', const=False)
 
+    parser.add_argument('--tag',               help='tag.', default='voc', type=str)
+
     parser.add_argument('--backbone',        help='Backbone model used by retinanet.', default='resnet50', type=str)
-    parser.add_argument('--batch-size',      help='Size of the batches.', default=2, type=int)
-    parser.add_argument('--gpu',             help='Id of the GPU to use (as reported by nvidia-smi).')
-    parser.add_argument('--multi-gpu',       help='Number of GPUs to use for parallel processing.', type=int, default=1)
+    parser.add_argument('--batch-size',      help='Size of the batches.', default=1, type=int)
+    parser.add_argument('--gpu',             help='Id of the GPU to use (as reported by nvidia-smi).',type=str, default='0')
+    parser.add_argument('--multi-gpu',       help='Number of GPUs to use for parallel processing.', type=int, default=0)
     parser.add_argument('--multi-gpu-force', help='Extra flag needed to enable (experimental) multi-gpu support.', action='store_true')
-    parser.add_argument('--epochs',          help='Number of epochs to train.', type=int, default=100)
-    parser.add_argument('--steps',           help='Number of steps per epoch.', type=int, default=30000)
+    parser.add_argument('--epochs',          help='Number of epochs to train.', type=int, default=1000)
+    parser.add_argument('--steps',           help='Number of steps per epoch.', type=int, default=80000)
     parser.add_argument('--snapshot-path',   help='Path to store snapshots of models during training (defaults to \'./snapshots\')', default='./snapshots')
     parser.add_argument('--tensorboard-dir', help='Log directory for Tensorboard output', default='./logs')
     parser.add_argument('--no-snapshots',    help='Disable saving snapshots.', dest='snapshots', action='store_false')
@@ -374,43 +346,9 @@ def parse_args(args):
     parser.add_argument('--random-transform', help='Randomly transform image and annotations.', action='store_true', default=True)
     parser.add_argument('--image-min-side', help='Rescale the image so the smallest side is min_side.', type=int, default=800)
     parser.add_argument('--image-max-side', help='Rescale the image if the largest side is larger than max_side.', type=int, default=1333)
-    parser.add_argument('--datasets', help='datasdets.', type=str, default='train_data')
+    parser.add_argument('--datasets', help='datasdets.', type=str, default='C300')
 
     return check_args(parser.parse_args(args))
-
-# 196
-# def parse_args(args):
-#     parser     = argparse.ArgumentParser(description='Simple training script for training a RetinaNet network.')
-#     subparsers = parser.add_subparsers(help='Arguments for specific dataset types.', dest='dataset_type')
-#     subparsers.required = True
-#
-#     pascal_parser = subparsers.add_parser('pascal')
-#     pascal_parser.add_argument('pascal_path', help='Path to dataset directory (ie. /tmp/VOCdevkit).')
-#
-#     group = parser.add_mutually_exclusive_group()
-#     group.add_argument('--snapshot',          help='Resume training from a snapshot.')
-#     group.add_argument('--imagenet-weights',  help='Initialize the model with pretrained imagenet weights. This is the default behaviour.', action='store_const', const=True, default=True)
-#     group.add_argument('--weights',           help='Initialize the model with weights from a file.')
-#     group.add_argument('--no-weights',        help='Don\'t initialize the model with any weights.', dest='imagenet_weights', action='store_const', const=False)
-#
-#     parser.add_argument('--backbone',        help='Backbone model used by retinanet.', default='resnet101', type=str)
-#     parser.add_argument('--batch-size',      help='Size of the batches.', default=2, type=int)
-#     parser.add_argument('--gpu',             help='Id of the GPU to use (as reported by nvidia-smi).')
-#     parser.add_argument('--multi-gpu',       help='Number of GPUs to use for parallel processing.', type=int, default=0)
-#     parser.add_argument('--multi-gpu-force', help='Extra flag needed to enable (experimental) multi-gpu support.', action='store_true')
-#     parser.add_argument('--epochs',          help='Number of epochs to train.', type=int, default=100)
-#     parser.add_argument('--steps',           help='Number of steps per epoch.', type=int, default=2000)
-#     parser.add_argument('--snapshot-path',   help='Path to store snapshots of models during training (defaults to \'./snapshots\')', default='/disk2/train/snapshots')
-#     parser.add_argument('--tensorboard-dir', help='Log directory for Tensorboard output', default='./logs')
-#     parser.add_argument('--no-snapshots',    help='Disable saving snapshots.', dest='snapshots', action='store_false')
-#     parser.add_argument('--no-evaluation',   help='Disable per epoch evaluation.', dest='evaluation', action='store_false')
-#     parser.add_argument('--freeze-backbone', help='Freeze training of backbone layers.', action='store_true')
-#     parser.add_argument('--random-transform', help='Randomly transform image and annotations.', action='store_true')
-#     parser.add_argument('--image-min-side', help='Rescale the image so the smallest side is min_side.', type=int, default=800)
-#     parser.add_argument('--image-max-side', help='Rescale the image if the largest side is larger than max_side.', type=int, default=1333)
-#
-#     return check_args(parser.parse_args(args))
-
 
 def data_info(train_generator, validation_generator):
     '''
@@ -442,6 +380,8 @@ def main(args=None):
 
     # optionally choose specific GPU
     if args.gpu:
+        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+        os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
         os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
     keras.backend.tensorflow_backend.set_session(get_session())
 
@@ -493,7 +433,8 @@ def main(args=None):
     # start training
     training_model.fit_generator(
         generator=train_generator,
-        steps_per_epoch=args.steps,
+        steps_per_epoch=len(train_generator.image_names) // args.batch_size,
+        # steps_per_epoch=10,
         epochs=args.epochs,
         verbose=1,
         callbacks=callbacks,
