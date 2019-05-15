@@ -175,9 +175,8 @@ args = parser.parse_args()
 def main(data_path, save_path):
     all_data = get_data(data_path)
     print(len(all_data))
-    time.sleep(5)
-    # cpus = cpu_count() // 4
-    cpus = 6
+    cpus = cpu_count() - 1
+    # cpus = 6
     p = Pool(cpus)
     p.map_async(process, all_data)
 

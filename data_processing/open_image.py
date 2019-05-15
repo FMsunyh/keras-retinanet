@@ -11,14 +11,17 @@ import time
 from PIL import Image
 import os
 
+import io_utils
+
+
 def read_image_bgr(path):
     try:
         image = np.asarray(Image.open(path).convert('RGB'))
-        if image is None:
-            raise Exception("Invalid image!", path)
     except Exception as ex:
         print(path)
-        print(ex)
+        io_utils.delete_file_folder(path)
+        return None
+
     return image[:, :, ::-1].copy()
 
 def get_data(data_path):

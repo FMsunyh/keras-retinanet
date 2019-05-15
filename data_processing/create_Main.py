@@ -8,7 +8,7 @@
 import argparse
 import random
 import os
-from data_processing.io_utils import mkdir
+from data_processing.utils.io_utils import mkdir
 from config import ROOT_HOME
 
 def _create_Main(path):
@@ -18,7 +18,7 @@ def _create_Main(path):
     :param path:
     :return:
     '''
-    scale = 10
+    scale = 3
     image_dir = os.path.join(path, 'JPEGImages')
     anno_dir = os.path.join(path, 'Annotations')
     ImageSets_path = os.path.join(path, 'ImageSets')
@@ -85,7 +85,7 @@ def create_txts(data_dirs):
 parser = argparse.ArgumentParser(description='Get the data info')
 # parser.add_argument('-d', '--datadir', help='path in server', default='/home/syh/train_data/data/all_train_data')
 # parser.add_argument('-d', '--datadir', help='path in server', default='/home/syh/train_data/test')
-parser.add_argument('-d', '--datadir', help='path in server', default='/home/syh/train_data/data/all_train_data_resize')
+parser.add_argument('-d', '--datadir', help='path in server', default='/home/syh/tf-faster-rcnn/data/train_data/train_data-2018-04-02')
 args = parser.parse_args()
 
 if __name__ == "__main__":

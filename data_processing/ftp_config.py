@@ -9,7 +9,7 @@
 host = "192.168.1.210"
 port = 21  # not str
 username = "syh"
-password = "zjai0301"
+password = "zjai6868"
 
 # remote和local是相对客户端的
 ftp_home = "/data"
