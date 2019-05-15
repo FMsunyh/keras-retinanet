@@ -19,14 +19,25 @@ from ..utils.coco_eval import evaluate_coco
 
 
 class CocoEval(keras.callbacks.Callback):
+    """ Performs COCO evaluation on each epoch.
+    """
     def __init__(self, generator, tensorboard=None, threshold=0.05):
+        """ CocoEval callback intializer.
+
+        Args
+            generator   : The generator used for creating validation data.
+            tensorboard : If given, the results will be written to tensorboard.
+            threshold   : The score threshold to use.
+        """
         self.generator = generator
         self.threshold = threshold
         self.tensorboard = tensorboard
 
         super(CocoEval, self).__init__()
 
-    def on_epoch_end(self, epoch, logs={}):
+    def on_epoch_end(self, epoch, logs=None):
+        logs = logs or {}
+
         coco_tag = ['AP @[ IoU=0.50:0.95 | area=   all | maxDets=100 ]',
                     'AP @[ IoU=0.50      | area=   all | maxDets=100 ]',
                     'AP @[ IoU=0.75      | area=   all | maxDets=100 ]',
@@ -48,3 +59,4 @@ class CocoEval(keras.callbacks.Callback):
                 summary_value.simple_value = result
                 summary_value.tag = '{}. {}'.format(index + 1, coco_tag[index])
                 self.tensorboard.writer.add_summary(summary, epoch)
+                logs[coco_tag[index]] = result

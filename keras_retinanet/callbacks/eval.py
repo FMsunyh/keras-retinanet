@@ -19,6 +19,9 @@ from ..utils.eval import evaluate
 
 
 class Evaluate(keras.callbacks.Callback):
+    """ Evaluation callback for arbitrary datasets.
+    """
+
     def __init__(self, generator, iou_threshold=0.5, score_threshold=0.05, max_detections=100, save_path=None, tensorboard=None, verbose=1):
         """ Evaluate a given dataset using a given model at the end of every epoch during training.
 
@@ -41,7 +44,9 @@ class Evaluate(keras.callbacks.Callback):
 
         super(Evaluate, self).__init__()
 
-    def on_epoch_end(self, epoch, logs={}):
+    def on_epoch_end(self, epoch, logs=None):
+        logs = logs or {}
+
         # run evaluation
         average_precisions = evaluate(
             self.generator,
@@ -52,7 +57,17 @@ class Evaluate(keras.callbacks.Callback):
             save_path=self.save_path
         )
 
-        self.mean_ap = sum(average_precisions.values()) / len(average_precisions)
+        # compute per class average precision
+        present_classes = 0
+        precision = 0
+        for label, (average_precision, num_annotations ) in average_precisions.items():
+            if self.verbose == 1:
+                print('{:.0f} instances of class'.format(num_annotations),
+                      self.generator.label_to_name(label), 'with average precision: {:.4f}'.format(average_precision))
+            if num_annotations > 0:
+                present_classes += 1
+                precision       += average_precision
+        self.mean_ap = precision / present_classes
 
         if self.tensorboard is not None and self.tensorboard.writer is not None:
             import tensorflow as tf
@@ -62,7 +77,7 @@ class Evaluate(keras.callbacks.Callback):
             summary_value.tag = "mAP"
             self.tensorboard.writer.add_summary(summary, epoch)
 
+        logs['mAP'] = self.mean_ap
+
         if self.verbose == 1:
-            for label, average_precision in average_precisions.items():
-                print(self.generator.label_to_name(label), '{:.4f}'.format(average_precision))
             print('mAP: {:.4f}'.format(self.mean_ap))
